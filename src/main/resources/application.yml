@@ -1,5 +1,5 @@
 server:
-  port: 8083
+  port: 8081
 
 spring:
   application:
@@ -10,7 +10,7 @@ spring:
     mongodb:
       host: ${MONGO_HOST:localhost}
       port: ${MONGO_PORT:27017}
-      database: ${MONGO_DB:Authentication}
+      database: ${MONGO_DB:Catalog}
       username: ${MONGO_USER:admin}
       password: ${MONGO_PASSWORD:password}
       authentication-database: admin

@@ -2,9 +2,11 @@ package com.ecommerce.catalog.service;
 
 import com.ecommerce.catalog.dto.*;
 import com.ecommerce.catalog.model.Product;
+import com.ecommerce.catalog.model.ProductCreate;
 import com.ecommerce.catalog.model.ProductList;
 import com.ecommerce.catalog.model.ProductQuery;
 import com.ecommerce.catalog.repository.ProductPersistenceAdapter;
+import com.ecommerce.catalog.repository.ProductsRepository;
 import com.ecommerce.catalog.security.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +28,7 @@ import java.util.List;
 public class CatalogService {
 
     private final ProductPersistenceAdapter productPersistenceAdapter;
+    private final ProductsRepository productRepository;
 
 
     public Mono<ApiResponse<ProductList>> getProducts(ProductQuery query) {
@@ -50,10 +53,22 @@ public class CatalogService {
 
 
 
-    public Mono<ApiResponse<Product>> createProduct(Product product) {
+    public Mono<ApiResponse<List<String>>> getCategories() {
+        return productPersistenceAdapter.findDistinctCategories()
+                .filter(c -> c != null && !c.isBlank())
+                .collectList()
+                .map(categories -> ApiResponse.<List<String>>builder()
+                        .success(true)
+                        .message("Categorie disponibili")
+                        .data(categories)
+                        .timestamp(System.currentTimeMillis())
+                        .build());
+    }
 
-        return productPersistenceAdapter.insert(product)
-                .map(productOut -> ApiResponse.<Product>builder().data(product).
+    public Mono<ApiResponse<Product>> createProduct(ProductCreate product) {
+
+        return productRepository.insert(new Product(product))
+                .map(productOut -> ApiResponse.<Product>builder().data(productOut).
                         success(true).timestamp(System.currentTimeMillis())
                         .message("prodotto creato con id"+productOut.getId()).build())
                 .onErrorResume(e -> Mono.just(ApiResponse.<Product>builder()
@@ -65,7 +80,7 @@ public class CatalogService {
 
 
     public Mono<ApiResponse<Product>> deleteProduct(String id) {
-        return productPersistenceAdapter.deleteById(id)
+        return productRepository.deleteById(id)
                 .thenReturn(ApiResponse.<Product>builder()
                         .data(null)
                         .success(true)
@@ -79,7 +94,7 @@ public class CatalogService {
     }
 
     public Mono<ApiResponse<Product>> updateProduct(String id, Product productDetails) {
-        return productPersistenceAdapter.findById(id)
+        return productRepository.findById(id)
                 .flatMap(existingProduct -> {
                     // Aggiorni i campi dell'oggetto esistente
                     existingProduct.setName(productDetails.getName());
@@ -88,7 +103,7 @@ public class CatalogService {
                     existingProduct.setStockQuantity(productDetails.getStockQuantity());
 
                     // Salvi l'oggetto aggiornato
-                    return productPersistenceAdapter.save(existingProduct);
+                    return productRepository.save(existingProduct);
                 })
                 .map(updatedProduct -> ApiResponse.<Product>builder()
                         .success(true)
@@ -104,7 +119,7 @@ public class CatalogService {
 
 
     public Mono<ApiResponse<Product>> patchProduct(String id, Product productDetails) {
-        return productPersistenceAdapter.findById(id)
+        return productRepository.findById(id)
                 .flatMap(existingProduct -> {
                     // Aggiorni i campi dell'oggetto esistente
                     if (productDetails.getName() != null && !productDetails.getName().isEmpty()) {
@@ -119,7 +134,7 @@ public class CatalogService {
                     if (productDetails.getStockQuantity() != null) {
                         existingProduct.setStockQuantity(productDetails.getStockQuantity());
                     }
-                    return productPersistenceAdapter.save(existingProduct);
+                    return productRepository.save(existingProduct);
                 })
                 .map(updatedProduct -> ApiResponse.<Product>builder()
                         .success(true)

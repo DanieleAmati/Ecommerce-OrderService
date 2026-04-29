@@ -2,9 +2,11 @@ package com.ecommerce.catalog.service;
 
 import com.ecommerce.catalog.dto.ApiResponse;
 import com.ecommerce.catalog.model.Product;
+import com.ecommerce.catalog.model.ProductCreate;
 import com.ecommerce.catalog.model.ProductList;
 import com.ecommerce.catalog.model.ProductQuery;
 import com.ecommerce.catalog.repository.ProductPersistenceAdapter;
+import com.ecommerce.catalog.repository.ProductsRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,6 +29,8 @@ class CatalogServiceTest {
 
     @Mock
     private ProductPersistenceAdapter productPersistenceAdapter;
+    @Mock
+    private ProductsRepository productsRepository;
 
     private CatalogService catalogService;
 
@@ -35,7 +39,7 @@ class CatalogServiceTest {
 
     @BeforeEach
     void setUp() {
-        catalogService = new CatalogService(productPersistenceAdapter);
+        catalogService = new CatalogService(productPersistenceAdapter, productsRepository);
         productId = UUID.randomUUID().toString();
         sampleProduct = Product.builder()
                 .Id(productId)
@@ -69,9 +73,11 @@ class CatalogServiceTest {
     @Test
     @DisplayName("createProduct: salva un prodotto con successo")
     void createProduct_success() {
-        when(productPersistenceAdapter.insert(any(Product.class))).thenReturn(Mono.just(sampleProduct));
 
-        StepVerifier.create(catalogService.createProduct(sampleProduct))
+        ProductCreate pc = ProductCreate.builder().category(sampleProduct.getCategory()).stockQuantity(sampleProduct.getStockQuantity()).description(sampleProduct.getDescription()).name(sampleProduct.getName()).imageUrl(sampleProduct.getImageUrl()).build();
+        when(productsRepository.insert(any(Product.class))).thenReturn(Mono.just(sampleProduct));
+
+        StepVerifier.create(catalogService.createProduct(pc))
                 .assertNext(response -> {
                     assertThat(response.isSuccess()).isTrue();
                     assertThat(response.getMessage()).contains(productId);
@@ -83,7 +89,7 @@ class CatalogServiceTest {
     @Test
     @DisplayName("deleteProduct: elimina un prodotto esistente")
     void deleteProduct_success() {
-        when(productPersistenceAdapter.deleteById(productId)).thenReturn(Mono.empty());
+        when(productsRepository.deleteById(productId)).thenReturn(Mono.empty());
 
         StepVerifier.create(catalogService.deleteProduct(productId))
                 .assertNext(response -> {
@@ -103,8 +109,8 @@ class CatalogServiceTest {
                 .stockQuantity(5)
                 .build();
 
-        when(productPersistenceAdapter.findById(productId)).thenReturn(Mono.just(sampleProduct));
-        when(productPersistenceAdapter.save(any(Product.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        when(productsRepository.findById(productId)).thenReturn(Mono.just(sampleProduct));
+        when(productsRepository.save(any(Product.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
         StepVerifier.create(catalogService.updateProduct(productId, updateDetails))
                 .assertNext(response -> {
@@ -122,8 +128,8 @@ class CatalogServiceTest {
         Product patchDetails = new Product();
         patchDetails.setPrice(1500.0f); // Solo il prezzo cambia
 
-        when(productPersistenceAdapter.findById(productId)).thenReturn(Mono.just(sampleProduct));
-        when(productPersistenceAdapter.save(any(Product.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        when(productsRepository.findById(productId)).thenReturn(Mono.just(sampleProduct));
+        when(productsRepository.save(any(Product.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
         StepVerifier.create(catalogService.patchProduct(productId, patchDetails))
                 .assertNext(response -> {
@@ -137,7 +143,7 @@ class CatalogServiceTest {
     @Test
     @DisplayName("updateProduct: restituisce success=false se il prodotto non esiste")
     void updateProduct_notFound() {
-        when(productPersistenceAdapter.findById("invalid-id")).thenReturn(Mono.empty());
+        when(productsRepository.findById("invalid-id")).thenReturn(Mono.empty());
 
         StepVerifier.create(catalogService.updateProduct("invalid-id", sampleProduct))
                 .assertNext(response -> {
@@ -150,10 +156,10 @@ class CatalogServiceTest {
     @Test
     @DisplayName("createProduct: gestisce l'errore in caso di fallimento persistenza")
     void createProduct_error() {
-        when(productPersistenceAdapter.insert(any(Product.class)))
+        when(productsRepository.insert(any(Product.class)))
                 .thenReturn(Mono.error(new RuntimeException("DB Error")));
-
-        StepVerifier.create(catalogService.createProduct(sampleProduct))
+        ProductCreate pc = ProductCreate.builder().category(sampleProduct.getCategory()).stockQuantity(sampleProduct.getStockQuantity()).description(sampleProduct.getDescription()).name(sampleProduct.getName()).imageUrl(sampleProduct.getImageUrl()).build();
+        StepVerifier.create(catalogService.createProduct(pc))
                 .assertNext(response -> {
                     assertThat(response.isSuccess()).isFalse();
                     assertThat(response.getMessage()).contains("Errore durante la creazione: DB Error"); // Nota: nel tuo codice l'errore del create ha il messaggio dell'eliminazione

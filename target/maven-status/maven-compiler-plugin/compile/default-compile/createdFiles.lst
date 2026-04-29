@@ -1,3 +1,4 @@
+com\ecommerce\catalog\model\ProductCreate$ProductCreateBuilder.class
 com\ecommerce\catalog\dto\ApiResponse.class
 com\ecommerce\catalog\exception\CatalogException.class
 com\ecommerce\catalog\CatalogServiceApplication.class
@@ -20,6 +21,7 @@ com\ecommerce\catalog\controller\CatalogController.class
 com\ecommerce\catalog\exception\GlobalExceptionHandler.class
 com\ecommerce\catalog\exception\CatalogException$DatabaseException.class
 com\ecommerce\catalog\exception\CatalogException$AccountDisabledException.class
+com\ecommerce\catalog\model\ProductCreate.class
 com\ecommerce\catalog\repository\ProductsRepository.class
 com\ecommerce\catalog\config\JwtProperties.class
 com\ecommerce\catalog\model\ProductQuery$ProductQueryBuilder.class

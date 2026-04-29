@@ -38,6 +38,7 @@ public class SecurityConfig {
                 .authorizeExchange(exchanges -> exchanges
                         // Endpoint pubblici — accessibili senza token
                         .pathMatchers(HttpMethod.GET, "/catalog/products").permitAll()
+                        .pathMatchers(HttpMethod.POST, "/catalog/products").permitAll()
                         .pathMatchers("/actuator/health").permitAll()
                         // Tutto il resto richiede autenticazione
                         .anyExchange().authenticated()

@@ -16,4 +16,6 @@ public class ProductQuery {
     private String prodCategory;
     private Integer limit;
     private Integer offset;
+    private String nameOrder;
+    private String priceOrder;
 }

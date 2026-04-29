@@ -15,10 +15,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Product {
+public class ProductCreate {
 
-
-    private String Id;
     @NotBlank
     private String name;
     private String category;
@@ -28,14 +26,4 @@ public class Product {
     @PositiveOrZero
     private Integer stockQuantity;
     private String imageUrl;
-
-public Product(ProductCreate product){
-    this.name = product.getName();
-    this.category = product.getCategory();
-    this.description = product.getDescription();
-    this.price = product.getPrice();
-    this.stockQuantity = product.getStockQuantity();
-    this.imageUrl = product.getImageUrl();
-}
-
 }

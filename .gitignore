@@ -27,3 +27,5 @@ target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.l
 target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst
 target/surefire-reports/com.ecommerce.catalog.service.CatalogServiceTest.txt
 target/surefire-reports/TEST-com.ecommerce.catalog.service.CatalogServiceTest.xml
+sessions.vschat
+docs/issues

@@ -11,6 +11,7 @@ com\ecommerce\catalog\model\ProductList$ProductListBuilder.class
 com\ecommerce\catalog\security\TokenProvider.class
 com\ecommerce\catalog\exception\CatalogException$NotFoundException.class
 com\ecommerce\catalog\config\SecurityConfig.class
+com\ecommerce\catalog\exception\CatalogException$ForbiddenException.class
 com\ecommerce\catalog\security\JwtAuthenticationFilter.class
 com\ecommerce\catalog\dto\ApiResponse$ApiResponseBuilder.class
 com\ecommerce\catalog\model\ProductQuery.class

@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -26,7 +27,7 @@ public class CatalogController {
     private final CatalogService catalogService;
 
     @GetMapping("/products")
-    public Mono<ResponseEntity<ApiResponse<ProductList>>> getProducts(@Valid @RequestParam(value="name", required = false) String prodName, @Valid @RequestParam(value="category", required = false)  String prodCategory, @Valid @RequestParam(value="limit", required = false, defaultValue = "10") Integer limit, @Valid @RequestParam(value="offset", required = false, defaultValue = "0") Integer offset, @RequestParam(value="order", required = false) String order) {
+    public Mono<ResponseEntity<ApiResponse<ProductList>>> getProducts(@Valid @RequestParam(value="name", required = false) String prodName, @Valid @RequestParam(value="category", required = false)  String prodCategory, @Valid @RequestParam(value="limit", required = false, defaultValue = "10") Integer limit, @Valid @RequestParam(value="offset", required = false, defaultValue = "0") Integer offset, @RequestParam(value="order", required = false) String order, @RequestParam(value="seller", required = false) String prodOwner) {
         String nameOrder = null;
         String priceOrder = null;
         if (order != null) {
@@ -36,7 +37,10 @@ public class CatalogController {
                 priceOrder = order.substring(6);
             }
         }
-        ProductQuery productQuery = ProductQuery.builder().prodName(prodName).prodCategory(prodCategory).limit(limit).offset(offset).nameOrder(nameOrder).priceOrder(priceOrder).build();
+        ProductQuery productQuery = ProductQuery.builder().prodName(prodName).prodCategory(prodCategory).
+                limit(limit).offset(offset).
+                nameOrder(nameOrder).priceOrder(priceOrder)
+                .prodOwner(prodOwner).build();
         return catalogService.getProducts(productQuery)
                 .map(body -> ResponseEntity.ok(body)).onErrorReturn(ResponseEntity.internalServerError().build());
     }
@@ -56,23 +60,41 @@ public class CatalogController {
 
     @DeleteMapping("/products/{id}")
     Mono<ResponseEntity<Object>> deleteProduct(@PathVariable String id) {
-        return catalogService.deleteProduct(id)
-                .map(body -> ResponseEntity.noContent().build())
-                .onErrorReturn(ResponseEntity.internalServerError().build());
+        return ReactiveSecurityContextHolder.getContext()
+                .map(ctx -> ctx.getAuthentication())
+                .flatMap(auth -> {
+                    String requesterId = (String) auth.getPrincipal();
+                    boolean isAdmin = auth.getAuthorities().stream()
+                            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+                    return catalogService.deleteProduct(id, requesterId, isAdmin);
+                })
+                .map(body -> (ResponseEntity<Object>) ResponseEntity.noContent().build());
     }
 
 
     @PutMapping("/products/{id}")
     Mono<ResponseEntity<ApiResponse<Product>>> updateProduct(@PathVariable String id, @Valid @RequestBody Product product) {
-        return catalogService.updateProduct(id, product).map(body -> ResponseEntity.ok(body))
-                .onErrorReturn(ResponseEntity.internalServerError().build());
-    }
-
+            return ReactiveSecurityContextHolder.getContext()
+                    .map(ctx -> ctx.getAuthentication())
+            .flatMap(auth -> {
+        String requesterId = (String) auth.getPrincipal();
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        return catalogService.updateProduct(id,product, requesterId, isAdmin);
+    })
+            .map(body -> (ResponseEntity<ApiResponse<Product>>) ResponseEntity.ok(body));
+}
 
     @PatchMapping("/products/{id}")
     Mono<ResponseEntity<ApiResponse<Product>>> patchProduct(@PathVariable String id, @Valid @RequestBody Product product) {
-        return catalogService.updateProduct(id, product).map(body -> ResponseEntity.ok(body))
-                .onErrorReturn(ResponseEntity.internalServerError().build());
+        return ReactiveSecurityContextHolder.getContext()
+                .map(ctx -> ctx.getAuthentication())
+                .flatMap(auth -> {
+                    String requesterId = (String) auth.getPrincipal();
+                    boolean isAdmin = auth.getAuthorities().stream()
+                            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+                    return catalogService.updateProduct(id, product, requesterId, isAdmin);
+                })
+                .map(body -> (ResponseEntity<ApiResponse<Product>>) ResponseEntity.ok(body));
     }
-
 }

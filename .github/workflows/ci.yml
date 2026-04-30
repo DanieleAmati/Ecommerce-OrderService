@@ -70,18 +70,29 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - run: docker run -d --name catalog -p 8080:8080 ${{ env.REGISTRY }}/${{ steps.repo.outputs.name }}:${{ github.sha }}
+      - run: docker network create ci
+      - run: docker run -d --name mongo --network ci -p 27017:27017 mongo:7
+      - run: |
+          docker run -d --name app \
+            --network ci \
+            -p 8081:8081 \
+            -e SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/Catalog \
+            ${{ env.REGISTRY }}/${{ steps.repo.outputs.name }}:${{ github.sha }}
       - run: |
           for i in {1..30}; do
-            CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/actuator/health || true)
-            if [ "$CODE" = "200" ] || [ "$CODE" = "503" ]; then
-              echo "HTTP $CODE"
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8081/actuator/health || true)
+            if [ "$CODE" = "200" ]; then
+              echo "HTTP 200"
               exit 0
             fi
             sleep 2
           done
           echo "Health check failed"
           exit 1
-      - run: docker logs catalog
+      - run: docker logs app
         if: failure()
-      - run: docker stop catalog
+      - run: |
+          docker stop app mongo || true
+          docker rm app mongo || true
+          docker network rm ci || true
+        if: always()

@@ -29,3 +29,6 @@ target/surefire-reports/com.ecommerce.catalog.service.CatalogServiceTest.txt
 target/surefire-reports/TEST-com.ecommerce.catalog.service.CatalogServiceTest.xml
 sessions.vschat
 docs/issues
+target/catalog-service-1.2.0.jar.original
+target/catalog-service-1.2.0.jar.original
+/target

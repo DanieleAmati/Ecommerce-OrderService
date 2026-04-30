@@ -80,6 +80,22 @@ public class CatalogService {
     }
 
 
+    public Mono<ApiResponse<Product>> getProductById(String id) {
+        return productRepository.findById(id)
+                .map(product -> ApiResponse.<Product>builder()
+                        .data(product)
+                        .success(true)
+                        .message("Prodotto trovato")
+                        .timestamp(System.currentTimeMillis())
+                        .build())
+                .switchIfEmpty(Mono.error(new CatalogException.NotFoundException("Non trovato")))
+                .onErrorResume(e -> Mono.just(ApiResponse.<Product>builder()
+                        .success(false)
+                        .message("Errore: " + e.getMessage())
+                        .build()));
+    }
+
+
     public Mono<ApiResponse<Product>> deleteProduct(String id, String requesterId, boolean isAdmin) {
         return productRepository.findById(id)
                 .switchIfEmpty(Mono.error(new CatalogException.NotFoundException("Prodotto non trovato con id: " + id)))

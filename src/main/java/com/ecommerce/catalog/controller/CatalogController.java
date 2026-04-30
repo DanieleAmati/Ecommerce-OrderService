@@ -53,6 +53,13 @@ public class CatalogController {
                 .onErrorReturn(ResponseEntity.internalServerError().build());
     }
 
+    @GetMapping("/products/{id}")
+    public Mono<ResponseEntity<ApiResponse<Product>>> getCategories(@PathVariable String id) {
+        return catalogService.getProductById(id)
+                .map(ResponseEntity::ok)
+                .onErrorReturn(ResponseEntity.internalServerError().build());
+    }
+
     @PostMapping("/products")
     public Mono<ResponseEntity<ApiResponse<Product>>> createProduct(@Valid @RequestBody ProductCreate product) {
         return catalogService.createProduct(product).map(body -> ResponseEntity.ok(body)).onErrorReturn(ResponseEntity.internalServerError().build());

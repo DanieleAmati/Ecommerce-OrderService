@@ -3,7 +3,12 @@ server:
 
 spring:
   application:
-    name: auth-service
+    name: catalog-service
+  jackson:
+    property-naming-strategy: SNAKE_CASE # Converte camelCase in snake_case (es: prodName -> prod_name)
+    default-property-inclusion: non_null  # Non inviare campi nulli al client
+    serialization:
+      write-dates-as-timestamps: false
 
   # ===== MongoDB Reactive =====
   data:

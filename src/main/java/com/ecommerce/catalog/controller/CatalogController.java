@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -59,23 +60,41 @@ public class CatalogController {
 
     @DeleteMapping("/products/{id}")
     Mono<ResponseEntity<Object>> deleteProduct(@PathVariable String id) {
-        return catalogService.deleteProduct(id)
-                .map(body -> ResponseEntity.noContent().build())
-                .onErrorReturn(ResponseEntity.internalServerError().build());
+        return ReactiveSecurityContextHolder.getContext()
+                .map(ctx -> ctx.getAuthentication())
+                .flatMap(auth -> {
+                    String requesterId = (String) auth.getPrincipal();
+                    boolean isAdmin = auth.getAuthorities().stream()
+                            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+                    return catalogService.deleteProduct(id, requesterId, isAdmin);
+                })
+                .map(body -> (ResponseEntity<Object>) ResponseEntity.noContent().build());
     }
 
 
     @PutMapping("/products/{id}")
     Mono<ResponseEntity<ApiResponse<Product>>> updateProduct(@PathVariable String id, @Valid @RequestBody Product product) {
-        return catalogService.updateProduct(id, product).map(body -> ResponseEntity.ok(body))
-                .onErrorReturn(ResponseEntity.internalServerError().build());
-    }
-
+            return ReactiveSecurityContextHolder.getContext()
+                    .map(ctx -> ctx.getAuthentication())
+            .flatMap(auth -> {
+        String requesterId = (String) auth.getPrincipal();
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        return catalogService.updateProduct(id,product, requesterId, isAdmin);
+    })
+            .map(body -> (ResponseEntity<ApiResponse<Product>>) ResponseEntity.ok(body));
+}
 
     @PatchMapping("/products/{id}")
     Mono<ResponseEntity<ApiResponse<Product>>> patchProduct(@PathVariable String id, @Valid @RequestBody Product product) {
-        return catalogService.updateProduct(id, product).map(body -> ResponseEntity.ok(body))
-                .onErrorReturn(ResponseEntity.internalServerError().build());
+        return ReactiveSecurityContextHolder.getContext()
+                .map(ctx -> ctx.getAuthentication())
+                .flatMap(auth -> {
+                    String requesterId = (String) auth.getPrincipal();
+                    boolean isAdmin = auth.getAuthorities().stream()
+                            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+                    return catalogService.updateProduct(id, product, requesterId, isAdmin);
+                })
+                .map(body -> (ResponseEntity<ApiResponse<Product>>) ResponseEntity.ok(body));
     }
-
 }

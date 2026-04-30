@@ -1,6 +1,7 @@
 package com.ecommerce.catalog.service;
 
 import com.ecommerce.catalog.dto.ApiResponse;
+import com.ecommerce.catalog.exception.CatalogException;
 import com.ecommerce.catalog.model.Product;
 import com.ecommerce.catalog.model.ProductCreate;
 import com.ecommerce.catalog.model.ProductList;
@@ -36,6 +37,8 @@ class CatalogServiceTest {
 
     private Product sampleProduct;
     private String productId;
+    private final String ownerId = "user-owner-123";
+    private final String otherUserId = "user-other-456";
 
     @BeforeEach
     void setUp() {
@@ -47,6 +50,7 @@ class CatalogServiceTest {
                 .category("Electronics")
                 .price(1200.0f)
                 .stockQuantity(10)
+                .prodOwner(ownerId)
                 .build();
     }
 
@@ -87,11 +91,12 @@ class CatalogServiceTest {
     }
 
     @Test
-    @DisplayName("deleteProduct: elimina un prodotto esistente")
-    void deleteProduct_success() {
-        when(productsRepository.deleteById(productId)).thenReturn(Mono.empty());
+    @DisplayName("deleteProduct: il proprietario elimina il proprio prodotto")
+    void deleteProduct_success_byOwner() {
+        when(productsRepository.findById(productId)).thenReturn(Mono.just(sampleProduct));
+        when(productsRepository.delete(sampleProduct)).thenReturn(Mono.empty());
 
-        StepVerifier.create(catalogService.deleteProduct(productId))
+        StepVerifier.create(catalogService.deleteProduct(productId, ownerId, false))
                 .assertNext(response -> {
                     assertThat(response.isSuccess()).isTrue();
                     assertThat(response.getMessage()).contains(productId);
@@ -100,8 +105,43 @@ class CatalogServiceTest {
     }
 
     @Test
-    @DisplayName("updateProduct: aggiorna tutti i campi di un prodotto esistente")
-    void updateProduct_success() {
+    @DisplayName("deleteProduct: un admin può eliminare qualsiasi prodotto")
+    void deleteProduct_success_byAdmin() {
+        when(productsRepository.findById(productId)).thenReturn(Mono.just(sampleProduct));
+        when(productsRepository.delete(sampleProduct)).thenReturn(Mono.empty());
+
+        StepVerifier.create(catalogService.deleteProduct(productId, otherUserId, true))
+                .assertNext(response -> assertThat(response.isSuccess()).isTrue())
+                .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("deleteProduct: utente non proprietario e non admin riceve ForbiddenException")
+    void deleteProduct_forbidden_whenNotOwnerAndNotAdmin() {
+        when(productsRepository.findById(productId)).thenReturn(Mono.just(sampleProduct));
+
+        StepVerifier.create(catalogService.deleteProduct(productId, otherUserId, false))
+                .expectErrorMatches(e -> e instanceof CatalogException.ForbiddenException)
+                .verify();
+
+        verify(productsRepository, never()).delete(any(Product.class));
+    }
+
+    @Test
+    @DisplayName("deleteProduct: prodotto non trovato restituisce NotFoundException")
+    void deleteProduct_notFound() {
+        when(productsRepository.findById(productId)).thenReturn(Mono.empty());
+
+        StepVerifier.create(catalogService.deleteProduct(productId, ownerId, false))
+                .expectErrorMatches(e -> e instanceof CatalogException.NotFoundException)
+                .verify();
+
+        verify(productsRepository, never()).delete(any(Product.class));
+    }
+
+    @Test
+    @DisplayName("updateProduct: il proprietario aggiorna tutti i campi del proprio prodotto")
+    void updateProduct_success_byOwner() {
         Product updateDetails = Product.builder()
                 .name("Updated Name")
                 .category("New Category")
@@ -112,7 +152,7 @@ class CatalogServiceTest {
         when(productsRepository.findById(productId)).thenReturn(Mono.just(sampleProduct));
         when(productsRepository.save(any(Product.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
-        StepVerifier.create(catalogService.updateProduct(productId, updateDetails))
+        StepVerifier.create(catalogService.updateProduct(productId, updateDetails, ownerId, false))
                 .assertNext(response -> {
                     assertThat(response.isSuccess()).isTrue();
                     assertThat(response.getData().getName()).isEqualTo("Updated Name");
@@ -120,6 +160,36 @@ class CatalogServiceTest {
                     assertThat(response.getData().getPrice()).isEqualTo(999.0f);
                 })
                 .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("updateProduct: un admin aggiorna un prodotto altrui")
+    void updateProduct_success_byAdmin() {
+        Product updateDetails = Product.builder()
+                .name("Admin Updated")
+                .category("New Category")
+                .price(500.0f)
+                .stockQuantity(3)
+                .build();
+
+        when(productsRepository.findById(productId)).thenReturn(Mono.just(sampleProduct));
+        when(productsRepository.save(any(Product.class))).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+        StepVerifier.create(catalogService.updateProduct(productId, updateDetails, otherUserId, true))
+                .assertNext(response -> assertThat(response.isSuccess()).isTrue())
+                .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("updateProduct: utente non proprietario e non admin riceve ForbiddenException")
+    void updateProduct_forbidden_whenNotOwnerAndNotAdmin() {
+        when(productsRepository.findById(productId)).thenReturn(Mono.just(sampleProduct));
+
+        StepVerifier.create(catalogService.updateProduct(productId, sampleProduct, otherUserId, false))
+                .expectErrorMatches(e -> e instanceof CatalogException.ForbiddenException)
+                .verify();
+
+        verify(productsRepository, never()).save(any());
     }
 
     @Test
@@ -141,16 +211,13 @@ class CatalogServiceTest {
     }
 
     @Test
-    @DisplayName("updateProduct: restituisce success=false se il prodotto non esiste")
+    @DisplayName("updateProduct: prodotto non trovato restituisce NotFoundException")
     void updateProduct_notFound() {
         when(productsRepository.findById("invalid-id")).thenReturn(Mono.empty());
 
-        StepVerifier.create(catalogService.updateProduct("invalid-id", sampleProduct))
-                .assertNext(response -> {
-                    assertThat(response.isSuccess()).isFalse();
-                    assertThat(response.getMessage()).contains("non trovato");
-                })
-                .verifyComplete();
+        StepVerifier.create(catalogService.updateProduct("invalid-id", sampleProduct, ownerId, false))
+                .expectErrorMatches(e -> e instanceof CatalogException.NotFoundException)
+                .verify();
     }
 
     @Test

@@ -58,4 +58,11 @@ public class CatalogException extends RuntimeException {
     public static class DatabaseException extends CatalogException {
         public DatabaseException(String message) {super(message, HttpStatus.INTERNAL_SERVER_ERROR);}
     }
+
+    /** Operazione non consentita per l'utente autenticato. → 403 Forbidden */
+    public static class ForbiddenException extends CatalogException {
+        public ForbiddenException(String message) {
+            super(message, HttpStatus.FORBIDDEN);
+        }
+    }
 }

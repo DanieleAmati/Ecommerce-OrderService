@@ -1,6 +1,7 @@
 package com.ecommerce.catalog.service;
 
 import com.ecommerce.catalog.dto.*;
+import com.ecommerce.catalog.exception.CatalogException;
 import com.ecommerce.catalog.model.Product;
 import com.ecommerce.catalog.model.ProductCreate;
 import com.ecommerce.catalog.model.ProductList;
@@ -79,30 +80,35 @@ public class CatalogService {
     }
 
 
-    public Mono<ApiResponse<Product>> deleteProduct(String id) {
-        return productRepository.deleteById(id)
-                .thenReturn(ApiResponse.<Product>builder()
-                        .data(null)
-                        .success(true)
-                        .message("Prodotto eliminato con id: " + id)
-                        .timestamp(System.currentTimeMillis())
-                        .build())
-                .onErrorResume(e -> Mono.just(ApiResponse.<Product>builder()
-                        .success(false)
-                        .message("Errore durante l'eliminazione: " + e.getMessage())
-                        .build()));
+    public Mono<ApiResponse<Product>> deleteProduct(String id, String requesterId, boolean isAdmin) {
+        return productRepository.findById(id)
+                .switchIfEmpty(Mono.error(new CatalogException.NotFoundException("Prodotto non trovato con id: " + id)))
+                .flatMap(product -> {
+                    if (!isAdmin && !product.getProdOwner().equals(requesterId)) {
+                        return Mono.error(new CatalogException.ForbiddenException("Non autorizzato: solo il proprietario o un admin può eliminare questo prodotto"));
+                    }
+                    return productRepository.delete(product)
+                            .thenReturn(ApiResponse.<Product>builder()
+                                    .data(null)
+                                    .success(true)
+                                    .message("Prodotto eliminato con id: " + id)
+                                    .timestamp(System.currentTimeMillis())
+                                    .build());
+                });
     }
 
-    public Mono<ApiResponse<Product>> updateProduct(String id, Product productDetails) {
+    public Mono<ApiResponse<Product>> updateProduct(String id, Product productDetails, String requesterId, boolean isAdmin) {
         return productRepository.findById(id)
+                .switchIfEmpty(Mono.error(new CatalogException.NotFoundException("Prodotto non trovato con id: " + id)))
                 .flatMap(existingProduct -> {
-                    // Aggiorni i campi dell'oggetto esistente
+                    if (!isAdmin && !existingProduct.getProdOwner().equals(requesterId)) {
+                        return Mono.error(new CatalogException.ForbiddenException("Non autorizzato: solo il proprietario o un admin può modificare questo prodotto"));
+                    }
                     existingProduct.setName(productDetails.getName());
                     existingProduct.setCategory(productDetails.getCategory());
                     existingProduct.setPrice(productDetails.getPrice());
                     existingProduct.setStockQuantity(productDetails.getStockQuantity());
-
-                    // Salvi l'oggetto aggiornato
+                    existingProduct.setDescription(productDetails.getDescription());
                     return productRepository.save(existingProduct);
                 })
                 .map(updatedProduct -> ApiResponse.<Product>builder()
@@ -110,11 +116,7 @@ public class CatalogService {
                         .data(updatedProduct)
                         .message("Prodotto aggiornato con successo")
                         .timestamp(System.currentTimeMillis())
-                        .build())
-                .switchIfEmpty(Mono.just(ApiResponse.<Product>builder()
-                        .success(false)
-                        .message("Prodotto non trovato con id: " + id)
-                        .build()));
+                        .build());
     }
 
 

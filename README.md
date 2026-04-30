@@ -1,2 +1,2 @@
-# Ecommerce-AuthenticationService
-Microservizio per l'autenticazione e autorizzazione  alla piattaforma di e-commerce
+# Ecommerce-CatalogService
+Microservizio per la gestione del catalog

@@ -32,6 +32,11 @@ public class ProductPersistenceAdapter  {
             mongoQuery.addCriteria(Criteria.where("category").regex(query.getProdCategory(), "i"));
         }
 
+
+        if (query.getProdOwner() != null) {
+            mongoQuery.addCriteria(Criteria.where("prodOwner").is(query.getProdOwner()));
+        }
+
         Sort sort = Sort.unsorted();
         if (query.getNameOrder() != null) {
             Sort.Direction direction = "desc".equalsIgnoreCase(query.getNameOrder()) ? Sort.Direction.DESC : Sort.Direction.ASC;
@@ -61,6 +66,9 @@ public class ProductPersistenceAdapter  {
         }
         if (query.getProdCategory() != null) {
             mongoQuery.addCriteria(Criteria.where("category").regex(query.getProdCategory(), "i"));
+        }
+        if (query.getProdOwner() != null) {
+            mongoQuery.addCriteria(Criteria.where("prodOwner").is(query.getProdOwner()));
         }
         return  mongoTemplate.count(mongoQuery, Product.class).map(result -> result.intValue());
     }

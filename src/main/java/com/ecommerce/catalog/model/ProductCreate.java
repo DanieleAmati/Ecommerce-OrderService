@@ -26,4 +26,5 @@ public class ProductCreate {
     @PositiveOrZero
     private Integer stockQuantity;
     private String imageUrl;
+    private String prodOwner;
 }

@@ -18,4 +18,5 @@ public class ProductQuery {
     private Integer offset;
     private String nameOrder;
     private String priceOrder;
+    private String prodOwner;
 }

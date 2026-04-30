@@ -42,7 +42,7 @@ class CatalogServiceTest {
         catalogService = new CatalogService(productPersistenceAdapter, productsRepository);
         productId = UUID.randomUUID().toString();
         sampleProduct = Product.builder()
-                .Id(productId)
+                .id(productId)
                 .name("Laptop Gaming")
                 .category("Electronics")
                 .price(1200.0f)

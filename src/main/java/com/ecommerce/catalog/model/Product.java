@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document("products")
@@ -17,8 +18,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 public class Product {
 
-
-    private String Id;
+    @Id
+    private String id;
     @NotBlank
     private String name;
     private String category;
@@ -28,6 +29,8 @@ public class Product {
     @PositiveOrZero
     private Integer stockQuantity;
     private String imageUrl;
+    @NotBlank
+    private String prodOwner;
 
 public Product(ProductCreate product){
     this.name = product.getName();
@@ -36,6 +39,7 @@ public Product(ProductCreate product){
     this.price = product.getPrice();
     this.stockQuantity = product.getStockQuantity();
     this.imageUrl = product.getImageUrl();
+    this.prodOwner = product.getProdOwner();
 }
 
 }

@@ -26,7 +26,7 @@ public class CatalogController {
     private final CatalogService catalogService;
 
     @GetMapping("/products")
-    public Mono<ResponseEntity<ApiResponse<ProductList>>> getProducts(@Valid @RequestParam(value="name", required = false) String prodName, @Valid @RequestParam(value="category", required = false)  String prodCategory, @Valid @RequestParam(value="limit", required = false, defaultValue = "10") Integer limit, @Valid @RequestParam(value="offset", required = false, defaultValue = "0") Integer offset, @RequestParam(value="order", required = false) String order, @RequestParam(value="prodOwner", required = false) String prodOwner) {
+    public Mono<ResponseEntity<ApiResponse<ProductList>>> getProducts(@Valid @RequestParam(value="name", required = false) String prodName, @Valid @RequestParam(value="category", required = false)  String prodCategory, @Valid @RequestParam(value="limit", required = false, defaultValue = "10") Integer limit, @Valid @RequestParam(value="offset", required = false, defaultValue = "0") Integer offset, @RequestParam(value="order", required = false) String order, @RequestParam(value="seller", required = false) String prodOwner) {
         String nameOrder = null;
         String priceOrder = null;
         if (order != null) {

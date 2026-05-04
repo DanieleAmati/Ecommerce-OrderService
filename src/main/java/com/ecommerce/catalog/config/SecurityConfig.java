@@ -36,7 +36,7 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 .authorizeExchange(exchanges -> exchanges
-                        .anyExchange().authenticated()
+                        .pathMatchers("/actuator/**").permitAll().anyExchange().authenticated()
                 )
                 // Inserisce il filtro JWT prima del filtro di autenticazione standard
                 .addFilterAt(jwtAuthenticationFilter, SecurityWebFiltersOrder.AUTHENTICATION)

@@ -20,7 +20,8 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
-      - run: mvn -B clean install
+      - run: mvn -B clean package -DskipTests
+      - run: mvn -B test
       - uses: actions/upload-artifact@v4
         with:
           name: jar
@@ -89,8 +90,6 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ steps.repo.outputs.name }}:latest
             ${{ env.REGISTRY }}/${{ steps.repo.outputs.name }}:${{ github.sha }}
-
-
   test-container:
     name: Test Container
     needs: docker

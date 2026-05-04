@@ -32,3 +32,6 @@ docs/issues
 target/catalog-service-1.2.0.jar.original
 target/catalog-service-1.2.0.jar.original
 /target
+
+#Claude
+.claude/

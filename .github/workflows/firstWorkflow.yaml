@@ -109,7 +109,7 @@ jobs:
       - run: docker run -d --name mongo --network ci -p 27017:27017 mongo:7
       - run: |
           for i in {1..30}; do
-            nc -z mongo 27017 && echo "Mongo up" && exit 0
+            nc -z localhost 27017 && echo "Mongo up" && exit 0
             sleep 1
           done
           echo "Mongo not ready"

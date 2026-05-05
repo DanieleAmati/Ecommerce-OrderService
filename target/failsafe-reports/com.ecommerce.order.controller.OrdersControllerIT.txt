@@ -1,0 +1,56 @@
+-------------------------------------------------------------------------------
+Test set: com.ecommerce.order.controller.OrdersControllerIT
+-------------------------------------------------------------------------------
+Tests run: 14, Failures: 4, Errors: 0, Skipped: 0, Time elapsed: 11.07 s <<< FAILURE! -- in com.ecommerce.order.controller.OrdersControllerIT
+com.ecommerce.order.controller.OrdersControllerIT.createOrder_validBody_returns200 -- Time elapsed: 2.242 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<200 OK> but was:<400 BAD_REQUEST>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
+	at org.springframework.test.web.reactive.server.StatusAssertions.lambda$assertStatusAndReturn$4(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.ExchangeResult.assertWithDiagnostics(ExchangeResult.java:222)
+	at org.springframework.test.web.reactive.server.StatusAssertions.assertStatusAndReturn(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.StatusAssertions.isOk(StatusAssertions.java:68)
+	at com.ecommerce.order.controller.OrdersControllerIT.createOrder_validBody_returns200(OrdersControllerIT.java:188)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
+com.ecommerce.order.controller.OrdersControllerIT.updateOrder_byOtherUser_returns403 -- Time elapsed: 0.083 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<403 FORBIDDEN> but was:<400 BAD_REQUEST>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
+	at org.springframework.test.web.reactive.server.StatusAssertions.lambda$assertStatusAndReturn$4(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.ExchangeResult.assertWithDiagnostics(ExchangeResult.java:222)
+	at org.springframework.test.web.reactive.server.StatusAssertions.assertStatusAndReturn(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.StatusAssertions.isForbidden(StatusAssertions.java:146)
+	at com.ecommerce.order.controller.OrdersControllerIT.updateOrder_byOtherUser_returns403(OrdersControllerIT.java:308)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
+com.ecommerce.order.controller.OrdersControllerIT.updateOrder_byOwner_returns200 -- Time elapsed: 0.139 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<200 OK> but was:<400 BAD_REQUEST>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
+	at org.springframework.test.web.reactive.server.StatusAssertions.lambda$assertStatusAndReturn$4(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.ExchangeResult.assertWithDiagnostics(ExchangeResult.java:222)
+	at org.springframework.test.web.reactive.server.StatusAssertions.assertStatusAndReturn(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.StatusAssertions.isOk(StatusAssertions.java:68)
+	at com.ecommerce.order.controller.OrdersControllerIT.updateOrder_byOwner_returns200(OrdersControllerIT.java:276)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
+com.ecommerce.order.controller.OrdersControllerIT.patchOrder_byOwner_returns200 -- Time elapsed: 0.080 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<200 OK> but was:<400 BAD_REQUEST>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
+	at org.springframework.test.web.reactive.server.StatusAssertions.lambda$assertStatusAndReturn$4(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.ExchangeResult.assertWithDiagnostics(ExchangeResult.java:222)
+	at org.springframework.test.web.reactive.server.StatusAssertions.assertStatusAndReturn(StatusAssertions.java:236)
+	at org.springframework.test.web.reactive.server.StatusAssertions.isOk(StatusAssertions.java:68)
+	at com.ecommerce.order.controller.OrdersControllerIT.patchOrder_byOwner_returns200(OrdersControllerIT.java:324)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+

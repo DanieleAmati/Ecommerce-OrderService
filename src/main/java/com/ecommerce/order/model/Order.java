@@ -28,7 +28,6 @@ public class Order {
     @Id
     private String id;
 
-    @NotBlank
     private String name;
 
     @NotNull

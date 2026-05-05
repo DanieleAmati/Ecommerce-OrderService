@@ -98,7 +98,7 @@ public class OrderController {
 }
 
     @PatchMapping("/{id}")
-    Mono<ResponseEntity<ApiResponse<Order>>> patchOrder(@PathVariable String id, @Valid @RequestBody Order order) {
+    Mono<ResponseEntity<ApiResponse<Order>>> patchOrder(@PathVariable String id, @RequestBody Order order) {
         return ReactiveSecurityContextHolder.getContext()
                 .map(ctx -> ctx.getAuthentication())
                 .flatMap(auth -> {

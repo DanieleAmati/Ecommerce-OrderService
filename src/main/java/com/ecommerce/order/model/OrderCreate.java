@@ -31,7 +31,6 @@ public class OrderCreate {
     @Positive
     private Float total;
 
-    @NotBlank
     private String name;
 
     @NotNull

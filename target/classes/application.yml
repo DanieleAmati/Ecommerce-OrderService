@@ -1,9 +1,9 @@
 server:
-  port: 8081
+  port: 8082
 
 spring:
   application:
-    name: catalog-service
+    name: order-service
   jackson:
     property-naming-strategy: SNAKE_CASE # Converte camelCase in snake_case (es: prodName -> prod_name)
     default-property-inclusion: non_null  # Non inviare campi nulli al client
@@ -15,7 +15,7 @@ spring:
     mongodb:
       host: ${MONGO_HOST:riqualificazioneamati2026-storage}
       port: ${MONGO_PORT:27017}
-      database: ${MONGO_DB:Catalog}
+      database: ${MONGO_DB:Orders}
       username: ${MONGO_USER:admin}
       password: ${MONGO_PASSWORD:password}
       authentication-database: admin

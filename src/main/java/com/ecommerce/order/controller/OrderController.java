@@ -1,6 +1,7 @@
 package com.ecommerce.order.controller;
 
 import com.ecommerce.order.dto.ApiResponse;
+import com.ecommerce.order.exception.OrderException;
 import com.ecommerce.order.model.Order;
 import com.ecommerce.order.model.OrderCreate;
 import com.ecommerce.order.model.OrderList;
@@ -9,6 +10,7 @@ import com.ecommerce.order.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -42,7 +44,16 @@ public class OrderController {
                 nameOrder(nameOrder).dateOrder(dateOrder)
                 .ordOwner(ordOwner).build();
         return catalogService.getOrders(orderQuery)
-                .map(body -> ResponseEntity.ok(body)).onErrorReturn(ResponseEntity.internalServerError().build());
+                .map(body -> ResponseEntity.ok(body)).doOnError(e -> log.error("Errore nel recupero ordini: {}", e.getMessage()))
+                .onErrorResume(e -> {
+                    if (e instanceof OrderException.NotFoundException) {
+                        return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+                    }
+                    if (e instanceof IllegalArgumentException) {
+                        return Mono.just(ResponseEntity.badRequest().build());
+                    }
+                    return Mono.just(ResponseEntity.internalServerError().build());
+                });
     }
 
 
@@ -50,12 +61,13 @@ public class OrderController {
     public Mono<ResponseEntity<ApiResponse<Order>>> getOrderById(@PathVariable String id) {
         return catalogService.getOrderById(id)
                 .map(ResponseEntity::ok)
+                .doOnError(e -> log.error("Errore nel recupero ordini: {}", e.getMessage()))
                 .onErrorReturn(ResponseEntity.internalServerError().build());
     }
 
     @PostMapping
     public Mono<ResponseEntity<ApiResponse<Order>>> createOrder(@Valid @RequestBody OrderCreate order) {
-        return catalogService.createOrder(order).map(body -> ResponseEntity.ok(body)).onErrorReturn(ResponseEntity.internalServerError().build());
+        return catalogService.createOrder(order).map(body -> ResponseEntity.ok(body)).doOnError(e -> log.error("Errore nel recupero ordini: {}", e.getMessage())).onErrorReturn(ResponseEntity.internalServerError().build());
     }
 
     @DeleteMapping("/{id}")

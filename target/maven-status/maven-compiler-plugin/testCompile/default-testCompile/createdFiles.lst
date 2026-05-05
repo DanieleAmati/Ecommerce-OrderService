@@ -1,3 +1,3 @@
-com\ecommerce\catalog\security\TokenProviderTest.class
-com\ecommerce\catalog\controller\CatalogControllerIT.class
-com\ecommerce\catalog\service\CatalogServiceTest.class
+com\ecommerce\order\service\OrdersServiceTest.class
+com\ecommerce\order\security\TokenProviderTest.class
+com\ecommerce\order\controller\OrdersControllerIT.class
